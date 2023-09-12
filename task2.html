@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge'>
+<title>Video Conferencing</title>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: grey;
+  }
+  #video-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+    padding: 20px;
+  }
+  video {
+    width: 100%;
+    max-height: 240px;
+    object-fit: cover;
+    border: 1px solid #ccc;
+  }
+  #controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+  }
+  button {
+    padding: 10px 20px;
+    margin: 0 5px;
+    border: none;
+    background-color: #007bff;
+    color: #fff;
+    cursor: pointer;
+  }
+  #chat-box {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #f0f0f0;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  #chat-input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+  }
+</style>
+</head>
+<body>
+<div id="video-grid"></div>
+<div id="controls">
+  <button id="join-btn">Join Room</button>
+  <button id="toggle-audio">Toggle Audio</button>
+  <button id="toggle-video">Toggle Video</button>
+  <button id="toggle-camera">Toggle Camera</button>
+</div>
+<div id="chat-box"></div>
+<input type="text" id="chat-input" placeholder="Type a message..." />
+<script>
+  const videoGrid = document.getElementById('video-grid');
+  const joinBtn = document.getElementById('join-btn');
+  const toggleAudioBtn = document.getElementById('toggle-audio');
+  const toggleVideoBtn = document.getElementById('toggle-video');
+  const toggleCameraBtn = document.getElementById('toggle-camera');
+  const chatBox = document.getElementById('chat-box');
+  const chatInput = document.getElementById('chat-input');
+  let localStream;
+
+  joinBtn.addEventListener('click', joinRoom);
+  toggleAudioBtn.addEventListener('click', toggleAudio);
+  toggleVideoBtn.addEventListener('click', toggleVideo);
+  toggleCameraBtn.addEventListener('click', toggleCamera);
+  chatInput.addEventListener('keypress', handleChatInput);
+
+  async function joinRoom() {
+    localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    addVideoStream(localStream);
+  }
+
+  function toggleAudio() {
+    if (localStream) {
+      localStream.getAudioTracks()[0].enabled = !localStream.getAudioTracks()[0].enabled;
+      toggleAudioBtn.textContent = localStream.getAudioTracks()[0].enabled ? 'Mute Audio' : 'Unmute Audio';
+    }
+  }
+
+  function toggleVideo() {
+    if (localStream) {
+      localStream.getVideoTracks()[0].enabled = !localStream.getVideoTracks()[0].enabled;
+      toggleVideoBtn.textContent = localStream.getVideoTracks()[0].enabled ? 'Turn Off Video' : 'Turn On Video';
+    }
+  }
+
+  function toggleCamera() {
+    if (localStream) {
+      localStream.getVideoTracks()[0].enabled = !localStream.getVideoTracks()[0].enabled;
+      toggleCameraBtn.textContent = localStream.getVideoTracks()[0].enabled ? 'Turn Off Camera' : 'Turn On Camera';
+    }
+  }
+
+  function handleChatInput(event) {
+    if (event.key === 'Enter') {
+      const message = chatInput.value;
+      if (message.trim() !== '') {
+        appendChatMessage('You', message);
+        chatInput.value = '';
+      }
+    }
+  }
+
+  function appendChatMessage(sender, message) {
+    const messageElement = document.createElement('div');
+    messageElement.textContent = `${sender}: ${message}`;
+    chatBox.appendChild(messageElement);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  function addVideoStream(stream) {
+    const videoElement = document.createElement('video');
+    videoElement.srcObject = stream;
+    videoElement.autoplay = true;
+    videoGrid.appendChild(videoElement);
+  }
+</script>
+</body>
+</html>
